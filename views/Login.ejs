@@ -1,0 +1,197 @@
+<%- include("partials/_header") %>
+
+   <!-- body -->
+   <body class="main-layout inner_page">
+      <!-- loader  -->
+      <div class="loader_bg">
+         <div class="loader"><img src="images/loading.gif" alt="#"/></div>
+      </div>
+      <!-- end loader -->
+     
+         <!-- header -->
+         <%- include("partials/_menu") %>
+         <!-- end header inner -->
+      <!-- contact -->
+        <div class="contact">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12 ">
+                <div class="titlepage text_align_center">
+                  <h2>Login</h2>
+                </div>
+              </div>
+              <div class="col-md-8 offset-md-2">
+                <form id="loginForm" class="main_form" action="users/login" method="POST">
+                  <div class="row">
+                    <div id="error-message" class="alert alert-danger d-none"></div>
+                    <div class="col-md-12">
+                      <input class="form_control" placeholder="Email" type="email" name="email"> 
+                    </div>
+
+                    <div class="col-md-12">
+                      <input class="form_control" placeholder="Password" type="password" name="password">                          
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="group_form">
+                        <button class="send_btn">Login</button>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="group_form">
+                        <a href="/reset-password">Şifre Sıfırla</a>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        
+
+        <footer>
+          <div class="footer">
+             <div class="container">
+                <div class="row">
+                         <div class="col-md-12">
+                               <ul class="menu_footer">
+                                  <li><a class="active" href="index.html">Home</a></li>
+                                  <li><a href="/about">About</a></li>
+                                  <li><a href="/photos">Photos</a></li>
+                                  <li><a href="/users">Users</a></li>
+                                  <li><a href="/contact">Contact</a></li>
+                               </ul>
+                         </div>
+                         <div class="col-md-12">
+                           <ul class="top_infomation">
+                             <li><a href="javascript:void(0)"><i><img src="/images/loc.png" alt="#"/></i></a></li>
+                             <li><a href="javascript:void(0)"><i><img src="/images/call.png" alt="#"/></i></a></li>      
+                             <li><a href="javascript:void(0)"><i><img src="/images/mail.png" alt="#"/></i></a></li>   
+                               </ul>
+                         </div>
+                </div>
+             </div>
+             <div class="copyright">
+                <div class="container">
+                   <div class="row d_flex">
+                      <div class="col-md-8">
+                         <p>© 2022 All Rights Reserved. Design by  <a href="https://html.design/"> Free html Templates</a></p>
+                      </div>
+                      <div class="col-md-4">
+                        <ul class="social_icon_bottom ">
+                           <li><a href="Javascript:void(0)"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                           <li><a href="Javascript:void(0)"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                           <li><a href="Javascript:void(0)"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+                        </ul>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </footer>
+       <!-- end footer -->
+       <!-- Javascript files-->
+       <script src="/js/jquery.min.js"></script>
+       <script src="/js/bootstrap.bundle.min.js"></script>
+       <script src="/js/jquery-3.0.0.min.js"></script>
+       <script src="/js/owl.carousel.min.js"></script>
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.8.1/baguetteBox.min.js"></script>
+       <script src="/js/custom.js"></script>
+         <script type="text/javascript">
+          baguetteBox.run('.tz-gallery');
+       </script>
+      
+      <script>
+         document.getElementById('loginForm').addEventListener('submit', async function(e) {
+           e.preventDefault();
+       
+           const formData = new FormData(this);
+           const data = Object.fromEntries(formData.entries());
+       
+           try {
+             const response = await fetch('/users/login', {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json'
+               },
+               body: JSON.stringify(data)
+             });
+       
+             console.log("Status:", response.status);
+             const result = await response.json();
+             console.log("Response:", result);
+       
+             const errorMessageDiv = document.getElementById('error-message');
+       
+             if (!result.succeeded) {
+               errorMessageDiv.textContent = "Kullanıcı Adı Veya Şifre Hatalı";
+               errorMessageDiv.classList.remove('d-none');
+       
+               setTimeout(() => {
+                 errorMessageDiv.classList.add('d-none');
+                 document.getElementById('loginForm').reset();
+               }, 5000);
+             } else if (result.redirectUrl) {
+               window.location.href = result.redirectUrl;
+             } else {
+               errorMessageDiv.textContent = "Yönlendirme yapılamadı: redirectUrl boş.";
+               errorMessageDiv.classList.remove('d-none');
+             }
+       
+           } catch (err) {
+             console.error("Login error:", err);
+           }
+         });
+       </script>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch('/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      console.log("Status:", response.status);
+      const result = await response.json();
+      console.log("Response:", result);
+
+      const errorMessageDiv = document.getElementById('error-message');
+
+      if (response.status !== 200) {
+        // If response is not successful, show the error message
+        errorMessageDiv.textContent = result.error || "An error occurred. Please try again.";
+        errorMessageDiv.classList.remove('d-none');
+
+        setTimeout(() => {
+          errorMessageDiv.classList.add('d-none');
+          document.getElementById('loginForm').reset();
+        }, 5000);
+      } else {
+        // If login is successful, redirect to dashboard
+        window.location.href = result.redirectUrl;
+      }
+
+    } catch (err) {
+      console.error("Login error:", err);
+      const errorMessageDiv = document.getElementById('error-message');
+      errorMessageDiv.textContent = "An unexpected error occurred.";
+      errorMessageDiv.classList.remove('d-none');
+    }
+  });
+</script>
+
+      </body>
+      </html>

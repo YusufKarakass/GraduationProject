@@ -1,0 +1,102 @@
+
+ <%- include("partials/_header") %>
+<body class="main-layout inner_page">
+  <div class="loader_bg">
+    <div class="loader"><img src="images/loading.gif" alt="#"/></div>
+  </div>
+  <%- include("partials/_menu") %>
+  <div class="contact">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <div class="titlepage">
+            <h2>Dashboard</h2>
+            <h3><%= user.firstname %></h3>
+            <% if (user.profilePhoto) { %>
+              <img src="/uploads/<%= user.profilePhoto %>" alt="Profile Photo" style="max-width:200px; border-radius:50%; margin-top: 20px;" />
+            <% } else { %>
+              <p>Henüz bir profil fotoğrafı yüklenmedi.</p>
+            <% } %>
+            <form action="/users/upload-photo" method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+              <input type="file" name="photo" accept="image/*" required />
+              <button type="submit">Fotoğraf Yükle</button>
+            </form>
+            <% if (user.profilePhoto) { %>
+              <form action="/users/delete-photo" method="POST" style="margin-top: 10px;">
+                <button type="submit">Profil Fotoğrafını Sil</button>
+              </form>
+            <% } %>
+            <button id="openCameraBtn" style="margin-top: 20px;">Yeni Profil Fotoğrafı Çek</button>
+            <div id="cameraSection" style="display:none; margin-top: 20px;">
+              <video id="video" width="320" height="240" autoplay></video>
+              <br />
+              <button id="captureBtn">Fotoğraf Çek</button>
+              <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+              <div id="emotionMessage" style="display:none; margin-top: 10px; padding: 10px; color: white; font-weight: bold;"></div>
+              <form id="cameraUploadForm" action="/users/upload-photo" method="POST" enctype="multipart/form-data" style="display:none;">
+                <input type="hidden" name="photoData" id="photoDataInput" />
+                <button type="submit">Kaydet</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<%- include("partials/_footer") %>
+ <script>
+  const openCameraBtn = document.getElementById('openCameraBtn');
+  const cameraSection = document.getElementById('cameraSection');
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const captureBtn = document.getElementById('captureBtn');
+  const photoDataInput = document.getElementById('photoDataInput');
+  const cameraUploadForm = document.getElementById('cameraUploadForm');
+  const emotionMessage = document.getElementById('emotionMessage');
+
+  openCameraBtn.addEventListener('click', () => {
+    cameraSection.style.display = 'block';
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("Kamera açılamadı: " + err.message);
+      });
+  });
+
+  captureBtn.addEventListener('click', async () => {
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const photoDataURL = canvas.toDataURL('image/png');
+    const response = await fetch('/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ image: photoDataURL })
+    });
+    const data = await response.json();
+    if (data.error) {
+      emotionMessage.style.display = 'block';
+      emotionMessage.innerText = "Duygu analizi hatası: " + data.error;
+      emotionMessage.style.backgroundColor = "#dc3545"; 
+      cameraUploadForm.style.display = 'none';
+      return;
+    }
+    if (data.emotion === 'happy' || data.emotion === 'neutral') {
+      emotionMessage.style.display = 'block';
+      emotionMessage.innerText = `Fotoğraf "${data.emotion}" olarak algılandı. Fotoğraf kabul edildi.`;
+      emotionMessage.style.backgroundColor = "#28a745"; 
+      photoDataInput.value = photoDataURL;
+      cameraUploadForm.style.display = 'block';
+    } else {
+      emotionMessage.style.display = 'block';
+      emotionMessage.innerText = `Fotoğraf "${data.emotion}" olarak algılandı. Sadece 'happy' veya 'neutral' duygudaki fotoğraflar kabul edilir.`;
+      emotionMessage.style.backgroundColor = "#dc3545"; 
+      cameraUploadForm.style.display = 'none';
+    }
+  });
+</script>

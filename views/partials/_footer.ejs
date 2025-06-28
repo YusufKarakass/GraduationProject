@@ -1,0 +1,96 @@
+<footer>
+    <div class="footer">
+       <div class="container">
+          <div class="row">
+                   <div class="col-md-12">
+                         <ul class="menu_footer">
+                            <li><a class="active" href="index.html">Home</a></li>
+                            <li><a href="/about">About</a></li>
+                            <li><a href="/photos">Photos</a></li>
+                            <li><a href="/users">Users</a></li>
+                            <li><a href="/contact">Contact</a></li>
+                         </ul>
+                   </div>
+                   <div class="col-md-12">
+                     <ul class="top_infomation">
+                       <li><a href="javascript:void(0)"><i><img src="/images/loc.png" alt="#"/></i></a></li>
+                       <li><a href="javascript:void(0)"><i><img src="/images/call.png" alt="#"/></i></a></li>      
+                       <li><a href="javascript:void(0)"><i><img src="/images/mail.png" alt="#"/></i></a></li>   
+                         </ul>
+                   </div>
+          </div>
+       </div>
+       <div class="copyright">
+          <div class="container">
+             <div class="row d_flex">
+                <div class="col-md-8">
+                   <p>© 2022 All Rights Reserved. Design by  <a href="https://html.design/"> Free html Templates</a></p>
+                </div>
+                <div class="col-md-4">
+                  <ul class="social_icon_bottom ">
+                     <li><a href="Javascript:void(0)"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                     <li><a href="Javascript:void(0)"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                     <li><a href="Javascript:void(0)"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+                  </ul>
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+ </footer>
+ <!-- end footer -->
+ <!-- Javascript files-->
+ <script src="/js/jquery.min.js"></script>
+ <script src="/js/bootstrap.bundle.min.js"></script>
+ <script src="/js/jquery-3.0.0.min.js"></script>
+ <script src="/js/owl.carousel.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.8.1/baguetteBox.min.js"></script>
+ <script src="/js/custom.js"></script>
+   <script type="text/javascript">
+    baguetteBox.run('.tz-gallery');
+ </script>
+
+<script>
+   document.getElementById('loginForm').addEventListener('submit', async function(e) {
+     e.preventDefault();
+ 
+     const formData = new FormData(this);
+     const data = Object.fromEntries(formData.entries());
+ 
+     try {
+       const response = await fetch('/users/login', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(data)
+       });
+ 
+       console.log("Status:", response.status);
+       const result = await response.json();
+       console.log("Response:", result);
+ 
+       const errorMessageDiv = document.getElementById('error-message');
+ 
+       if (!result.succeeded) {
+         errorMessageDiv.textContent = "Kullanıcı Adı Veya Şifre Hatalı";
+         errorMessageDiv.classList.remove('d-none');
+ 
+         setTimeout(() => {
+           errorMessageDiv.classList.add('d-none');
+           document.getElementById('loginForm').reset();
+         }, 5000);
+       } else if (result.redirectUrl) {
+         window.location.href = result.redirectUrl;
+       } else {
+         errorMessageDiv.textContent = "Yönlendirme yapılamadı: redirectUrl boş.";
+         errorMessageDiv.classList.remove('d-none');
+       }
+ 
+     } catch (err) {
+       console.error("Login error:", err);
+     }
+   });
+ </script>
+</body>
+</html>

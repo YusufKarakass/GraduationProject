@@ -1,0 +1,130 @@
+<%- include("partials/_header") %>
+
+<body class="main-layout">
+   <div class="loader_bg">
+      <div class="loader"><img src="images/loading.gif" alt="#" /></div>
+   </div>
+
+   <%- include("partials/_menu") %>
+
+   <div class="full_bg bt_fe">
+      <div class="slider_main">
+         <div class="container-fluid">
+            <div class="row d_flex">
+               <div class="col-md-5">
+                  <div class="creative">
+                     <h1>Moodify</h1>
+                     <a class="read_more" href="/contact">Contact Us</a>
+
+                     <button id="startBtn" onclick="startSystem()" class="btn btn-primary mt-3">Duygu Analiz Sistemini Başlat</button>
+                     <video id="video" autoplay muted style="display:none; width:100%; margin-top:10px;" class="mt-2"></video>
+                     <button id="analyzeBtn" onclick="captureAndAnalyze()" style="display:none;" class="btn btn-success mt-2">Analiz Et</button>
+                     <div id="result" class="mt-3" style="font-weight:bold;"></div>
+                  </div>
+               </div>
+
+               <div class="col-md-7">
+                  <div id="banner1" class="carousel slide">
+                     <ol class="carousel-indicators">
+                        <li data-target="#banner1" data-slide-to="0" class="active"></li>
+                        <li data-target="#banner1" data-slide-to="1"></li>
+                        <li data-target="#banner1" data-slide-to="2"></li>
+                     </ol>
+                     <div class="carousel-inner">
+                        <div class="carousel-item active">
+                           <div class="container">
+                              <div class="carousel-caption relative">
+                                 <div class="row d_flex">
+                                    <div class="col-md-12">
+                                       <div class="cemara"></div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="carousel-item">
+                           <div class="container">
+                              <div class="carousel-caption relative">
+                                 <div class="row d_flex">
+                                    <div class="col-md-12">
+                                       <div class="cemara"></div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="carousel-item">
+                           <div class="container">
+                              <div class="carousel-caption relative">
+                                 <div class="row d_flex">
+                                    <div class="col-md-12">
+                                       <div class="cemara"></div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <a class="carousel-control-prev" href="#banner1" role="button" data-slide="prev">
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                        <span class="sr-only">Previous</span>
+                     </a>
+                     <a class="carousel-control-next" href="#banner1" role="button" data-slide="next">
+                        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                        <span class="sr-only">Next</span>
+                     </a>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <%- include("partials/_footer") %>
+
+   
+   <script>
+      const video = document.getElementById('video');
+      const resultDiv = document.getElementById('result');
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      const startBtn = document.getElementById('startBtn');
+
+      function startSystem() {
+         navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+               video.srcObject = stream;
+               video.style.display = 'block';
+               analyzeBtn.style.display = 'inline-block';
+               startBtn.style.display = 'none';
+            })
+            .catch(err => {
+               console.error("Kamera açılamadı:", err);
+               resultDiv.innerText = "Kamera açılamadı.";
+            });}
+      async function captureAndAnalyze() {
+         resultDiv.innerText = "Analiz ediliyor...";
+
+         const canvas = document.createElement('canvas');
+         canvas.width = video.videoWidth;
+         canvas.height = video.videoHeight;
+         const ctx = canvas.getContext('2d');
+         ctx.drawImage(video, 0, 0);
+         const imageDataUrl = canvas.toDataURL('image/jpeg');
+         const response = await fetch('/analyze', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ image: imageDataUrl })
+         });
+         const data = await response.json();
+         if (data.error) {
+            resultDiv.innerText = "Hata: " + data.error;
+         } else {
+            resultDiv.innerHTML = `
+               <p>Duygu: <strong>${data.emotion}</strong></p>
+               <a href="${data.music}" target="_blank">🎵 Size önerdiğimiz müzik bu!</a>
+            `;
+         }}
+   </script>
+</body>
